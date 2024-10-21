@@ -100,15 +100,20 @@ jobs:
           AR_x86_64_pc_windows_gnu: x86_64-w64-mingw32-ar
           CFLAGS_x86_64_pc_windows_gnu: "-O2"
 
-      - name: Windows debug (find release file..)
-        if: ${{ matrix.target == 'x86_64-pc-windows-gnu' }}
-        run: tree target/
+      - name: Prepare release directory
+        run: |
+          mkdir -p release/bin
+          mv target/${{ matrix.target }}/release/dash-evo-tool${{ matrix.ext }} release/bin/
+
+      - name: Zip release folder
+        run: |
+          zip -r dash-evo-tool-${{ matrix.platform }}.zip release/
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v3
         with:
-          name: dash-evo-tool-${{ matrix.target }}
-          path: target/${{ matrix.target }}/release/dash-evo-tool${{ matrix.ext }}
+          name: dash-evo-tool-${{ matrix.platform }}.zip
+          path: dash-evo-tool-${{ matrix.platform }}.zip
 
     #continue-on-error: true
 
