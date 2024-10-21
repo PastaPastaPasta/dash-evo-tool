@@ -116,10 +116,6 @@ jobs:
 #          cargo build --release --target ${{ matrix.target }}
 #          mv target/${{ matrix.target }}/release/dash-evo-tool${{ matrix.ext }} release/${{ matrix.platform }}/dash-evo-tool-${{ matrix.platform }}
 
-      - name: Package release
-        run: |
-          zip -r dash-evo-tool-${{ matrix.platform }}.zip release/${{ matrix.platform }}/
-
       - name: Prepare release directory
         run: |
           mkdir -p /tmp/dash-evo-tool/
@@ -130,7 +126,7 @@ jobs:
           zip -r dash-evo-tool-${{ matrix.platform }}.zip /tmp/dash-evo-tool/
 
       - name: Upload build artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: dash-evo-tool-${{ matrix.platform }}.zip
           path: dash-evo-tool-${{ matrix.platform }}.zip
