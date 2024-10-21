@@ -120,6 +120,15 @@ jobs:
         run: |
           zip -r dash-evo-tool-${{ matrix.platform }}.zip release/${{ matrix.platform }}/
 
+      - name: Prepare release directory
+        run: |
+          mkdir -p dash-evo-tool/
+          cp -R release/${{ matrix.platform }}/* dash-evo-tool/
+
+      - name: Package release
+        run: |
+          zip -r dash-evo-tool-${{ matrix.platform }}.zip dash-evo-tool/
+
       - name: Upload build artifact
         uses: actions/upload-artifact@v3
         with:
