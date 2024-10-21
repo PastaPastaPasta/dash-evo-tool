@@ -28,14 +28,15 @@ jobs:
 #            runs-on: "ubuntu-20.04"
 #            target: "aarch64-unknown-linux-gnu"
 #            platform: "arm64-linux"
-          - name: "macos-amd64"
-            runs-on: "macos-13"
-            target: "x86_64-apple-darwin"
-            platform: "amd64-mac"
-          - name: "macos-arm64"
-            runs-on: "macos-latest"
-            target: "aarch64-apple-darwin"
-            platform: "arm64-mac"
+          # Disbale macos to speedup!
+#          - name: "macos-amd64"
+#            runs-on: "macos-13"
+#            target: "x86_64-apple-darwin"
+#            platform: "amd64-mac"
+#          - name: "macos-arm64"
+#            runs-on: "macos-latest"
+#            target: "aarch64-apple-darwin"
+#            platform: "arm64-mac"
           - name: "Windows"
             runs-on: "ubuntu-20.04"
             target: "x86_64-pc-windows-gnu"
@@ -102,7 +103,7 @@ jobs:
       - name: Build project
         run: |
           cargo build --release --target ${{ matrix.target }}
-          mv target/${{ matrix.target }}/release/dash-evo-tool${{ matrix.ext }} release/${{ matrix.platform }}/dash-evo-tool-${{ matrix.platform }}
+          mv target/${{ matrix.target }}/release/dash-evo-tool${{ matrix.ext }} release/${{ matrix.platform }}/dash-evo-tool${{ matrix.ext }}
         env:
           CC_x86_64_pc_windows_gnu: x86_64-w64-mingw32-gcc
           AR_x86_64_pc_windows_gnu: x86_64-w64-mingw32-ar
