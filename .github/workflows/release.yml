@@ -173,7 +173,7 @@ jobs:
           tag_name: ${{ github.event.inputs.tag }}
           files: |
             ./dash-evo-tool-amd64-linux.zip
-            ./dash-evo-tool-arm64-linux.zip
+#            ./dash-evo-tool-arm64-linux.zip
             ./dash-evo-tool-amd64-mac.zip
             ./dash-evo-tool-arm64-mac.zip
             ./dash-evo-tool-windows.zip
