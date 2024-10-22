@@ -14,6 +14,10 @@ on:
         description: "Version (i.e. v0.1.0)"
         required: true
 
+permissions:
+  id-token: write
+  attestations: write
+
 jobs:
   build-and-release:
     name: Build and Release Dash Evo Tool
@@ -111,6 +115,11 @@ jobs:
       - name: Package release
         run: |
           zip -r dash-evo-tool-${{ matrix.platform }}.zip dash-evo-tool/
+
+      - name: Attest
+        uses: actions/attest-build-provenance@v1
+        with:
+          subject-path: 'dash-evo-tool-${{ matrix.platform }}.zip'
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
