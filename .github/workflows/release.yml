@@ -51,9 +51,9 @@ jobs:
 
       - name: Setup prerequisites
         run: |
-          mkdir -p release/${{ matrix.platform }}
-          cp .env.example release/${{ matrix.platform }}/.env
-          cp -r dash_core_configs/ release/${{ matrix.platform }}/dash_core_configs
+          mkdir -p dash-evo-tool/
+          cp .env.example dash-evo-tool/.env
+          cp -r dash_core_configs/ dash-evo-tool/dash_core_configs
 
       - name: Install Rust toolchain
         uses: actions-rs/toolchain@v1
@@ -103,7 +103,7 @@ jobs:
       - name: Build project
         run: |
           cargo build --release --target ${{ matrix.target }}
-          mv target/${{ matrix.target }}/release/dash-evo-tool${{ matrix.ext }} release/${{ matrix.platform }}/dash-evo-tool${{ matrix.ext }}
+          mv target/${{ matrix.target }}/release/dash-evo-tool${{ matrix.ext }} dash-evo-tool/dash-evo-tool${{ matrix.ext }}
         env:
           CC_x86_64_pc_windows_gnu: x86_64-w64-mingw32-gcc
           AR_x86_64_pc_windows_gnu: x86_64-w64-mingw32-ar
@@ -116,14 +116,14 @@ jobs:
 #          cargo build --release --target ${{ matrix.target }}
 #          mv target/${{ matrix.target }}/release/dash-evo-tool${{ matrix.ext }} release/${{ matrix.platform }}/dash-evo-tool-${{ matrix.platform }}
 
-      - name: Prepare release directory
-        run: |
-          mkdir -p /dash-evo-tool/
-          cp -R release/${{ matrix.platform }}/* /dash-evo-tool/
+#      - name: Prepare release directory
+#        run: |
+#          mkdir -p /dash-evo-tool/
+#          cp -R release/${{ matrix.platform }}/* /dash-evo-tool/
 
       - name: Package release
         run: |
-          zip -r dash-evo-tool-${{ matrix.platform }}.zip /dash-evo-tool/
+          zip -r dash-evo-tool-${{ matrix.platform }}.zip dash-evo-tool/
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
