@@ -117,24 +117,63 @@ jobs:
       - name: Build project
         run: |
           cargo build --release --target ${{ matrix.target }}
-          mv target/${{ matrix.target }}/release/dash-evo-tool${{ matrix.ext }} dash-evo-tool/dash-evo-tool${{ matrix.ext }}
         env:
           CC_x86_64_pc_windows_gnu: x86_64-w64-mingw32-gcc
           AR_x86_64_pc_windows_gnu: x86_64-w64-mingw32-ar
           CFLAGS_x86_64_pc_windows_gnu: "-O2"
 
-      # Package release for macOS as .dmg
-      - name: Package release (macOS)
+      # Create .app bundle for macOS
+      - name: Create .app bundle (macOS)
         if: ${{ matrix.target == 'x86_64-apple-darwin' || matrix.target == 'aarch64-apple-darwin' }}
         run: |
-          hdiutil create -volname "Dash Evo Tool" -srcfolder dash-evo-tool/ -ov -format UDZO dash-evo-tool-${{ matrix.platform }}.dmg
-
+          APP_NAME="Dash Evo Tool"
+          EXECUTABLE="dash-evo-tool"
+          BUILD_DIR="target/${{ matrix.target }}/release"
+          APP_DIR="${APP_NAME}.app"
+          mkdir -p "${APP_DIR}/Contents/MacOS"
+          mkdir -p "${APP_DIR}/Contents/Resources"
+          cp "${BUILD_DIR}/${EXECUTABLE}" "${APP_DIR}/Contents/MacOS/${EXECUTABLE}"
+          # Create Info.plist
+          cat > "${APP_DIR}/Contents/Info.plist" <<EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>CFBundleName</key>
+            <string>${APP_NAME}</string>
+            <key>CFBundleIdentifier</key>
+            <string>com.example.dash-evotool</string>
+            <key>CFBundleVersion</key>
+            <string>1.0</string>
+            <key>CFBundleExecutable</key>
+            <string>${EXECUTABLE}</string>
+            <key>CFBundlePackageType</key>
+            <string>APPL</string>
+            <key>NSHighResolutionCapable</key>
+            <true/>
+            <key>LSUIElement</key>
+            <true/>
+          </dict>
+          </plist>
+          EOF
+          # Copy any resources (e.g., icons)
+          # cp path/to/icon.icns "${APP_DIR}/Contents/Resources/icon.icns"
+          # Create the .dmg file with Applications shortcut
+          mkdir -p dmg_content
+          ln -s /Applications dmg_content/Applications
+          mv "${APP_DIR}" dmg_content/
+          hdiutil create -volname "${APP_NAME}" -srcfolder dmg_content/ -ov -format UDZO dash-evo-tool-${{ matrix.platform }}.dmg
+          rm -rf dmg_content
       # Package release for other platforms as .zip
       - name: Package release (Other platforms)
         if: ${{ matrix.target != 'x86_64-apple-darwin' && matrix.target != 'aarch64-apple-darwin' }}
         run: |
-          zip -r dash-evo-tool-${{ matrix.platform }}.zip dash-evo-tool/
-
+          EXECUTABLE="dash-evo-tool${{ matrix.ext }}"
+          BUILD_DIR="target/${{ matrix.target }}/release"
+          mkdir -p package
+          cp "${BUILD_DIR}/${EXECUTABLE}" package/
+          cp -r dash-evo-tool/* package/
+          zip -r dash-evo-tool-${{ matrix.platform }}.zip package/
       # Attest
       - name: Attest
         uses: actions/attest-build-provenance@v1
@@ -168,22 +207,18 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: dash-evo-tool-amd64-linux.zip
-
-      #    - name: Download Linux Arm64 Artifact
-      #      uses: actions/download-artifact@v4
-      #      with:
-      #        name: dash-evo-tool-arm64-linux.zip
-
+      #      - name: Download Linux Arm64 Artifact
+      #        uses: actions/download-artifact@v4
+      #        with:
+      #          name: dash-evo-tool-arm64-linux.zip
       - name: Download macOS AMD64 Artifact
         uses: actions/download-artifact@v4
         with:
           name: dash-evo-tool-amd64-mac.dmg
-
       - name: Download macOS ARM64 Artifact
         uses: actions/download-artifact@v4
         with:
           name: dash-evo-tool-arm64-mac.dmg
-
       - name: Download Windows Artifact
         uses: actions/download-artifact@v4
         with:
