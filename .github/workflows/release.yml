@@ -28,10 +28,10 @@ jobs:
             runs-on: "ubuntu-20.04"
             target: "x86_64-unknown-linux-gnu"
             platform: "amd64-linux"
-#          - name: "linux-arm64"
-#            runs-on: "ubuntu-20.04"
-#            target: "aarch64-unknown-linux-gnu"
-#            platform: "arm64-linux"
+          #          - name: "linux-arm64"
+          #            runs-on: "ubuntu-20.04"
+          #            target: "aarch64-unknown-linux-gnu"
+          #            platform: "arm64-linux"
           - name: "macos-amd64"
             runs-on: "macos-13"
             target: "x86_64-apple-darwin"
@@ -62,7 +62,6 @@ jobs:
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
             ${{ runner.os }}-cargo-
-
 
       - name: Setup prerequisites
         run: |
@@ -124,16 +123,37 @@ jobs:
           AR_x86_64_pc_windows_gnu: x86_64-w64-mingw32-ar
           CFLAGS_x86_64_pc_windows_gnu: "-O2"
 
-      - name: Package release
+      # Package release for macOS as .dmg
+      - name: Package release (macOS)
+        if: ${{ matrix.target == 'x86_64-apple-darwin' || matrix.target == 'aarch64-apple-darwin' }}
+        run: |
+          hdiutil create -volname "Dash Evo Tool" -srcfolder dash-evo-tool/ -ov -format UDZO dash-evo-tool-${{ matrix.platform }}.dmg
+
+      # Package release for other platforms as .zip
+      - name: Package release (Other platforms)
+        if: ${{ matrix.target != 'x86_64-apple-darwin' && matrix.target != 'aarch64-apple-darwin' }}
         run: |
           zip -r dash-evo-tool-${{ matrix.platform }}.zip dash-evo-tool/
 
+      # Attest
       - name: Attest
         uses: actions/attest-build-provenance@v1
         with:
-          subject-path: 'dash-evo-tool-${{ matrix.platform }}.zip'
+          subject-path: |
+            dash-evo-tool-${{ matrix.platform }}.dmg
+            dash-evo-tool-${{ matrix.platform }}.zip
 
-      - name: Upload build artifact
+      # Upload build artifact for macOS
+      - name: Upload build artifact (macOS)
+        if: ${{ matrix.target == 'x86_64-apple-darwin' || matrix.target == 'aarch64-apple-darwin' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: dash-evo-tool-${{ matrix.platform }}.dmg
+          path: dash-evo-tool-${{ matrix.platform }}.dmg
+
+      # Upload build artifact for other platforms
+      - name: Upload build artifact (Other platforms)
+        if: ${{ matrix.target != 'x86_64-apple-darwin' && matrix.target != 'aarch64-apple-darwin' }}
         uses: actions/upload-artifact@v4
         with:
           name: dash-evo-tool-${{ matrix.platform }}.zip
@@ -148,18 +168,22 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: dash-evo-tool-amd64-linux.zip
-#      - name: Download Linux Arm64 Artifact
-#        uses: actions/download-artifact@v4
-#        with:
-#          name: dash-evo-tool-arm64-linux.zip
-      - name: Download MacOS AMD64 Artifact
+
+      #    - name: Download Linux Arm64 Artifact
+      #      uses: actions/download-artifact@v4
+      #      with:
+      #        name: dash-evo-tool-arm64-linux.zip
+
+      - name: Download macOS AMD64 Artifact
         uses: actions/download-artifact@v4
         with:
-          name: dash-evo-tool-amd64-mac.zip
-      - name: Download MacOS ARM64 Artifact
+          name: dash-evo-tool-amd64-mac.dmg
+
+      - name: Download macOS ARM64 Artifact
         uses: actions/download-artifact@v4
         with:
-          name: dash-evo-tool-arm64-mac.zip
+          name: dash-evo-tool-arm64-mac.dmg
+
       - name: Download Windows Artifact
         uses: actions/download-artifact@v4
         with:
@@ -173,8 +197,8 @@ jobs:
           tag_name: ${{ github.event.inputs.tag }}
           files: |
             ./dash-evo-tool-amd64-linux.zip
-            ./dash-evo-tool-amd64-mac.zip
-            ./dash-evo-tool-arm64-mac.zip
+            ./dash-evo-tool-amd64-mac.dmg
+            ./dash-evo-tool-arm64-mac.dmg
             ./dash-evo-tool-windows.zip
           draft: false
           prerelease: true
